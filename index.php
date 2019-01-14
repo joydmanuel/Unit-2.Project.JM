@@ -20,9 +20,9 @@ $total_questions=count($questions);
 
 if(is_array($asked_questions))
 {
-    for($i=1; $i<=$total_questions; $i++)
+    for($i=1; $i<=$total_questions || $i=0; $i++)
     {
-        $question_position=rand(1,$total_questions); // // Loop starts to generate a random question.
+        $question_position=rand(1,$total_questions); // Loop starts to generate a random question.
         if(!in_array($question_position, $asked_questions)) break;
     }
 }
@@ -85,6 +85,7 @@ $_SESSION["current_question_position"]=$current_question_position;
         $correct_percentage=$total_correct_answer*100/$total_questions_attempted;
         $incorrect_percentage=$total_incorrect_answer*100/$total_questions_attempted;
 
+
         echo "<br>Total Correct Answers: $total_correct_answer. Your Score is $correct_percentage%<br>";
         /* echo "<br>Total Incorrect Answers: $total_incorrect_answer ($incorrect_percentage%)<br>"; */
         session_destroy();
@@ -106,7 +107,7 @@ $_SESSION["current_question_position"]=$current_question_position;
                 $correct_answer_position = rand(1, 3);
                 if ($correct_answer_position == 1) {
                     echo
-                    "
+                        "
                         <input type='radio' name='answer' value='correctAnswer'/>
                         $correctAnswer
                         <input type='radio' name='answer' value='firstIncorrectAnswer'/>
@@ -116,7 +117,7 @@ $_SESSION["current_question_position"]=$current_question_position;
                 		";
                 } elseif ($correct_answer_position == 2) {
                     echo
-                    "
+                        "
                         <input type='radio' name='answer' value='firstIncorrectAnswer'/>
                         $firstIncorrectAnswer
                         <input type='radio' name='answer' value='correctAnswer'/>
@@ -126,7 +127,7 @@ $_SESSION["current_question_position"]=$current_question_position;
                 		";
                 } elseif ($correct_answer_position == 3) {
                     echo
-                    "
+                        "
                         <input type='radio' name='answer' value='firstIncorrectAnswer'/>
                         $firstIncorrectAnswer
                         <input type='radio' name='answer' value='secondIncorrectAnswer'/>
