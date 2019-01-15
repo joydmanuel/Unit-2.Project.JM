@@ -8,6 +8,7 @@ $total_incorrect_answer=$_SESSION["total_incorrect_answer"];
 if(empty($total_incorrect_answer)) $total_incorrect_answer=0;
 
 $asked_questions=$_SESSION["asked_questions"];
+if(empty($asked_questions)) $question_position=0;
 
 $current_question_position=$_SESSION["current_question_position"];
 if(empty($current_question_position)) $current_question_position=0;
@@ -20,7 +21,7 @@ $total_questions=count($questions);
 
 if(is_array($asked_questions))
 {
-    for($i=1; $i<=$total_questions || $i=0; $i++)
+    for($i=0; $i<=$total_questions OR $i=1; $i++)
     {
         $question_position=rand(1,$total_questions); // Loop starts to generate a random question.
         if(!in_array($question_position, $asked_questions)) break;
@@ -38,6 +39,7 @@ $rightAdder=$current_question["rightAdder"];
 $correctAnswer=$current_question["correctAnswer"];
 $firstIncorrectAnswer=$current_question["firstIncorrectAnswer"];
 $secondIncorrectAnswer=$current_question["secondIncorrectAnswer"];
+
 ?>
 <html lang="en">
 
@@ -62,6 +64,7 @@ switch($answer)
         $total_correct_answer++;
         $answer_key="Correct";
         break;
+        break;
     case "secondIncorrectAnswer":
         $total_incorrect_answer++;
         $answer_key="Incorrect";
@@ -72,11 +75,13 @@ $_SESSION["total_incorrect_answer"]=$total_incorrect_answer;
 $total_questions_attempted=$total_correct_answer+$total_incorrect_answer;
 $current_question_position++;
 $_SESSION["current_question_position"]=$current_question_position;
+//$asked_questions[]=$question_position;
+$_SESSION["asked_questions"]=$asked_questions;  // Track questions being asked.
 ?>
 <body>
 <div class="container">
     <?php
-    if($total_questions_attempted>0)
+    if($total_questions_attempted>1)
     {
         echo "Your answer was $answer_key<br>\n";
     }
@@ -84,7 +89,7 @@ $_SESSION["current_question_position"]=$current_question_position;
     {
         $correct_percentage=$total_correct_answer*100/$total_questions_attempted;
         $incorrect_percentage=$total_incorrect_answer*100/$total_questions_attempted;
-
+        //session_destroy();
 
         echo "<br>Total Correct Answers: $total_correct_answer. Your Score is $correct_percentage%<br>";
         /* echo "<br>Total Incorrect Answers: $total_incorrect_answer ($incorrect_percentage%)<br>"; */
