@@ -35,7 +35,7 @@ if($_POST["id"]) // if there is an ID submitted as post, user answered a questio
     $answer = $_POST["answer"]; // user selects radio to answer
     $id = $_POST["id"];
     $answerKey = null; // until user selects an answer
-    switch ($answer) // answerKey for firstIncorrectAnswer, secondIncorrectAnswer, and correct
+    switch($answer) // answerKey for firstIncorrectAnswer, secondIncorrectAnswer, and correct
     {
         case "firstIncorrectAnswer":
             $totalIncorrectAnswer++;
@@ -48,6 +48,9 @@ if($_POST["id"]) // if there is an ID submitted as post, user answered a questio
         case "secondIncorrectAnswer":
             $totalIncorrectAnswer++;
             $answerKey = "Incorrect";
+            break;
+        default:
+            $answerKey = "Incorrect. Please select an answer on the next try.";
             break;
     }
 
