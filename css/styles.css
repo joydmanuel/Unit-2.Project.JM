@@ -69,3 +69,8 @@ body {
   outline: none;
 }
 
+.radio {
+  width: 12em;
+  display: inline-block;
+  bottom: 150px;
+}

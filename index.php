@@ -1,37 +1,25 @@
 <?php
-session_start();
-$total_correct_answer=$_SESSION["total_correct_answer"];
-if(empty($total_correct_answer)) $total_correct_answer=0;
-$total_incorrect_answer=$_SESSION["total_incorrect_answer"];
-if(empty($total_incorrect_answer)) $total_incorrect_answer=0;
-$asked_questions=$_SESSION["asked_questions"];
-$current_question_position=$_SESSION["current_question_position"];
-if(empty($current_question_position)) $current_question_position=0;
-?>
-<!DOCTYPE html>
-<?php
-include_once 'inc/questions.php';
-$total_questions=count($questions);
-if(is_array($asked_questions))
-{
-    for($i=1; $i<=$total_questions; $i++)
-    {
-        $question_position=rand(1,$total_questions); // // Loop starts to generate a random question.
-        if(!in_array($question_position, $asked_questions)) break;
-    }
-}
-else $question_position=rand(1,$total_questions); // Generate a random question until all questions have been answered.
-$asked_questions[]=$question_position;
-$_SESSION["asked_questions"]=$asked_questions;  // Track questions being asked.
-$current_question=$questions[$question_position-1];
-$leftAdder=$current_question["leftAdder"];
-$rightAdder=$current_question["rightAdder"];
-$correctAnswer=$current_question["correctAnswer"];
-$firstIncorrectAnswer=$current_question["firstIncorrectAnswer"];
-$secondIncorrectAnswer=$current_question["secondIncorrectAnswer"];
-?>
-<html lang="en">
+session_start(); // start a session
 
+include("inc/questions.php"); // include questions.php
+
+$totalCorrectAnswer = $_SESSION["totalCorrectAnswer"]; // session variables
+if(empty($totalCorrectAnswer)) $totalCorrectAnswer = 0;
+
+$totalIncorrectAnswer = $_SESSION["totalIncorrectAnswer"]; // session variables
+if(empty($totalIncorrectAnswer)) $totalIncorrectAnswer = 0;
+
+$currentQuestionPosition = $_SESSION["currentQuestionPosition"]; // session variables
+if(empty($currentQuestionPosition)) $currentQuestionPosition = 0;
+
+$askedQuestions = $_SESSION["askedQuestions"];  // session variables to store in askedQuestions array
+if(empty($askedQuestions)) $askedQuestions = array();
+
+$totalQuestions = count($questions); // counter for the total questions being asked from questions array
+?>
+
+<!DOCTYPE html> <!-- project shell provided -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Math Quiz: Addition</title>
@@ -40,104 +28,130 @@ $secondIncorrectAnswer=$current_question["secondIncorrectAnswer"];
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <?php
-$answer = $_POST["answer"];
-$id = $_POST["id"];
-$answer_key=null;
-switch($answer)
+
+// track answers
+if($_POST["id"]) // if there is an ID submitted as post, user answered a question
 {
-    case "firstIncorrectAnswer":
-        $total_incorrect_answer++;
-        $answer_key="Incorrect";
-        break;
-    case "correctAnswer":
-        $total_correct_answer++;
-        $answer_key="Correct";
-        break;
-    case "secondIncorrectAnswer":
-        $total_incorrect_answer++;
-        $answer_key="Incorrect";
-        break;
-}
-$_SESSION["total_correct_answer"]=$total_correct_answer;
-$_SESSION["total_incorrect_answer"]=$total_incorrect_answer;
-$total_questions_attempted=$total_correct_answer+$total_incorrect_answer;
+    $answer = $_POST["answer"]; // user selects radio to answer
+    $id = $_POST["id"];
+    $answerKey = null; // until user selects an answer
+    switch ($answer) // answerKey for firstIncorrectAnswer, secondIncorrectAnswer, and correct
+    {
+        case "firstIncorrectAnswer":
+            $totalIncorrectAnswer++;
+            $answerKey = "Incorrect";
+            break;
+        case "correctAnswer":
+            $totalCorrectAnswer++;
+            $answerKey = "Correct";
+            break;
+        case "secondIncorrectAnswer":
+            $totalIncorrectAnswer++;
+            $answerKey = "Incorrect";
+            break;
+    }
 
- if($_SERVER["REQUEST_METHOD"] == "POST") {
-     $current_question_position++;
-     $_SESSION["current_question_position"]=$current_question_position;
 }
 
+$_SESSION["totalCorrectAnswer"] = $totalCorrectAnswer;
+//$_SESSION["totalIncorrectAnswer"] = $totalIncorrectAnswer;
+$totalQuestionsAttempted = count($askedQuestions);
+//$totalCorrectAnswer + $totalIncorrectAnswer;
+
+
+if($_SERVER["REQUEST_METHOD"] == "POST" && $currentQuestionPosition !=$totalQuestionsAttempted)
+{
+    $currentQuestionPosition++;
+    $_SESSION["currentQuestionPosition"] = $currentQuestionPosition;
+}
 
 ?>
+
 <body>
 <div class="container">
     <?php
-    if($total_questions_attempted>0)
+    if($totalQuestionsAttempted>0)
     {
-        echo "Your answer was $answer_key<br>\n";
+        echo "Your answer was $answerKey<br>\n";
     }
-    if($total_questions_attempted>=$total_questions)
+
+    if($totalQuestionsAttempted>=$totalQuestions)
     {
-        $correct_percentage=$total_correct_answer*100/$total_questions_attempted;
-        $incorrect_percentage=$total_incorrect_answer*100/$total_questions_attempted;
-        echo "<br>Total Correct Answers: $total_correct_answer. Your Score is $correct_percentage%<br>";
-        /* echo "<br>Total Incorrect Answers: $total_incorrect_answer ($incorrect_percentage%)<br>"; */
-        session_destroy();
-        if($correct_percentage>=80)
-            echo "<br><br>Congratulations, You Did Great!";
+        $correctPercentage = $totalCorrectAnswer*100/$totalQuestionsAttempted; // print score
+        $incorrectPercentage = $totalIncorrectAnswer*100/$totalQuestionsAttempted;
+        echo "<br>Total Correct Answers: $totalCorrectAnswer. Your Score is $correctPercentage%<br>";
+        session_destroy(); // destroy session at the end of 10 questions (wash, rinse, repeat)
+        if($correctPercentage>=80)
+            echo "<br><br>Congratulations, You Did Great!<br><br><a href='index.php'>This will bring you back to the beginning";
         else
             echo "<br><br><a href='index.php'>Try Again to Improve Your Score</a>";
     }
-    else {
+    else
+    {
+        $questionPosition = rand(1, $totalQuestions); // generate a random question
+
+        while(in_array($questionPosition, $askedQuestions)) // current questionPosition of the askedQuestions
+        {
+            $questionPosition = rand(1, $totalQuestions); // generate a different question, loop until all questions are asked
+        }
+
+        $askedQuestions[] = $questionPosition; // add questionPosition to askedQuestions array
+
+        $_SESSION["askedQuestions"] = $askedQuestions; // track questions and store in askedQuestions array so not repeating
+
+// assign a variable for each index from the associative array into the current question variable using its given value.
+        $currentQuestion = $questions[$questionPosition-1]; // identifies currentQuestion position from questions array
+        $leftAdder = $currentQuestion["leftAdder"];
+        $rightAdder = $currentQuestion["rightAdder"];
+        $correctAnswer = $currentQuestion["correctAnswer"];
+        $firstIncorrectAnswer = $currentQuestion["firstIncorrectAnswer"];
+        $secondIncorrectAnswer = $currentQuestion["secondIncorrectAnswer"];
+
         ?>
         <div id="quiz-box">
-            <p class="breadcrumbs">Question #<?php echo $current_question_position+1; ?> of
-                #<?php echo $total_questions; ?></p>
-            <p class="quiz">What is <?php echo $leftAdder; ?> + <?php echo $rightAdder; ?>?</p>
+            <p class="breadcrumbs">
+                Question #<?php echo $totalQuestionsAttempted + 1; ?> of
+                #<?php echo $totalQuestions; ?>
+            </p>
+            <p class="quiz">What is <?php echo $leftAdder; ?>
+                + <?php echo $rightAdder; ?>?
+            </p>
             <form action="index.php" method="post">
-                <input type="hidden" name="id" value="<?php echo $question_position; ?>"/>
+                <input type="hidden" name="id" value="<?php echo $questionPosition; ?>"/>
                 <br><br><br>
                 <?php
-                $correct_answer_position = rand(1, 3);
-                if ($correct_answer_position == 1) {
-                    echo
-                    "
-                        <input type='radio' name='answer' value='correctAnswer'/>
-                        $correctAnswer
-                        <input type='radio' name='answer' value='firstIncorrectAnswer'/>
-                        $firstIncorrectAnswer
-                        <input type='radio' name='answer' value='secondIncorrectAnswer'/>
-                        $secondIncorrectAnswer
-                		";
-                } elseif ($correct_answer_position == 2) {
-                    echo
-                    "
-                        <input type='radio' name='answer' value='firstIncorrectAnswer'/>
-                        $firstIncorrectAnswer
-                        <input type='radio' name='answer' value='correctAnswer'/>
-                        $correctAnswer
-                        <input type='radio' name='answer' value='secondIncorrectAnswer'/>
-                        $secondIncorrectAnswer
-                		";
-                } elseif ($correct_answer_position == 3) {
-                    echo
-                    "
-                        <input type='radio' name='answer' value='firstIncorrectAnswer'/>
-                        $firstIncorrectAnswer
-                        <input type='radio' name='answer' value='secondIncorrectAnswer'/>
-                        $secondIncorrectAnswer
-                        <input type='radio' name='answer' value='correctAnswer'/>
-                        $correctAnswer
-                		";
+                $correctAnswerPosition = rand(1, 3);
+                if ($correctAnswerPosition == 1)
+                {
+                    echo "
+                        <input type='radio' name='answer' value='correctAnswer'/> $correctAnswer<br><br><br>
+                        <input type='radio' name='answer' value='firstIncorrectAnswer'/> $firstIncorrectAnswer<br><br><br>
+                        <input type='radio' name='answer' value='secondIncorrectAnswer'/> $secondIncorrectAnswer<br><br><br>
+                    ";
                 }
+                elseif ($correctAnswerPosition == 2)
+                {
+                    echo "
+                        <input type='radio' name='answer' value='firstIncorrectAnswer'/> $firstIncorrectAnswer<br><br><br>
+                        <input type='radio' name='answer' value='correctAnswer'/> $correctAnswer<br><br><br>
+                        <input type='radio' name='answer' value='secondIncorrectAnswer'/> $secondIncorrectAnswer<br><br><br>
+                    ";
+                }
+                elseif ($correctAnswerPosition == 3)
+                {
+                    echo "
+                    <input type='radio' name='answer' value='firstIncorrectAnswer'/> $firstIncorrectAnswer<br><br><br>
+                    <input type='radio' name='answer' value='SecondIncorrectAnswer'/> $secondIncorrectAnswer<br><br><br>
+                    <input type='radio' name='answer' value='correctAnswer'/> $correctAnswer<br><br><br>
+                    ";
+                }
+
                 ?>
-                <br><br><br><br>
                 <input type="submit" class="btn" name="next" value="Next Question"/>
             </form>
         </div>
-
-        <?php
-    }//session_destroy();
+    <?php
+    }
     ?>
 </div>
 </body>
